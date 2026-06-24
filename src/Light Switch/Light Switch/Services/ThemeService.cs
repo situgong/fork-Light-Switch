@@ -8,8 +8,18 @@ namespace LightSwitch.Services
 	internal class ThemeService
 	{
 		private WallpaperService WallpaperService { get; } = new();
+		private IThemeChangeNotifier ThemeChangeNotifier { get; }
 
 		public NotifyIcon NotifyIcon { get; set; }
+
+		public ThemeService() : this(new WindowsThemeChangeNotifier())
+		{
+		}
+
+		internal ThemeService(IThemeChangeNotifier themeChangeNotifier)
+		{
+			ThemeChangeNotifier = themeChangeNotifier;
+		}
 
 		/// <summary>
 		/// Switches to the other theme.
@@ -51,6 +61,7 @@ namespace LightSwitch.Services
 				SetSystemTheme(true);
 				NotifyIcon.Icon = Resources.Icon_LightMode;
 			}
+			if (preferences.IsAppThemeEnabled || preferences.IsSystemThemeEnabled) ThemeChangeNotifier.NotifyThemeChanged();
 			if (preferences.IsWallpaperEnabled)
 			{
 				if (File.Exists(preferences.LightWallpaperPath))
@@ -76,6 +87,7 @@ namespace LightSwitch.Services
 				SetSystemTheme(false);
 				NotifyIcon.Icon = Resources.Icon_DarkMode;
 			}
+			if (preferences.IsAppThemeEnabled || preferences.IsSystemThemeEnabled) ThemeChangeNotifier.NotifyThemeChanged();
 			if (preferences.IsWallpaperEnabled)
 			{
 				if (File.Exists(preferences.DarkWallpaperPath))
